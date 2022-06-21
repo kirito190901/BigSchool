@@ -33,7 +33,7 @@
 </div>
 
 <ul class="course">
-    @foreach (var course in Model)
+    @foreach (var course in Model.UpcommingCourses)
             {
                 <li>
                     <div class="date">
@@ -47,12 +47,18 @@
                     <div class="detail">
                         <span class="lecturer">
                             @course.Lecturer.Name
-                            <button class="btn btn-default btn-sm js-toggle-follow" data-user-id="@course.LecturerId">Follow</button>
+                            @if (Model.ShowAction)
+                            {
+                                <button class="btn btn-default btn-sm js-toggle-follow" data-user-id="@course.LecturerId">Follow</button>
+                            }
                         </span>
                         <span class="category">
                             @course.Category.Name
                         </span>
-                        <button data-course-id="@course.ID" class="btn btn-default btn-sm js-toggle-attendance">Going?</button>
+                        @if (Model.ShowAction)
+                        {
+                            <button data-course-id="@course.ID" class="btn btn-default btn-sm js-toggle-attendance">Going?</button>
+                        }
                     </div>
                 </li>
             }
@@ -60,18 +66,35 @@
 @section scripts{
     <script>
         $(doctument).ready(function () {
+            CourseController.init();
             $(".js-toggle-attendance").click(function (e) {
                 var button = $(e.target);
-                $.post("/api/attendances", { courseId: button.attr("data-course-id") })
-                    .done(funtion(){
-                        button
+                if (button.hasClass("btn-default")) {
+                    $.post("/api/attendances", { courseId: button.attr("data-course-id") })
+                        .done(funtion(){
+                            button
                             .removeClass("btn-default")
-                            .addClass("btn-info")
-                            .text("Going");
+                                .addClass("btn-info")
+                                .text("Going");
+                        })
+                        .fail(funtion(){
+                            alert("Something failed!");
+                        });
+                } else {
+                    $.ajax({
+                        url: "/api/attendances" + button.attr("data-course-id"),
+                        method: "DELETE"
                     })
-                    .fail(funtion(){
-                        alert("Something failed!");
-                    });
+                        .done(function () {
+                            button
+                                .removeClass("btn-info")
+                                .addClass("btn-default")
+                                .text("Going?");
+                        })
+                        .fail(function () {
+                            alert("Something failed!");
+                        });
+                }
             });
             $(".js-toggle-follow").click(funtion(e){
                 var button = $(e.target);

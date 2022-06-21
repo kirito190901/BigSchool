@@ -16,7 +16,7 @@ namespace BigSchool.Models
         public string Name { set; get; }
         public ICollection<Following> Followers { set; get; }
         public ICollection<Following> Followees { set; get; }
-        pulic ApplicationUser()
+        public ApplicationUser()
         {
             Followers = new ICollection<Following>();
             Followees = new ICollection<Following>();
